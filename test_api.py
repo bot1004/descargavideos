@@ -1,135 +1,92 @@
+"""
+Script para probar los endpoints de la API
+"""
 import requests
 import json
 import sys
+import os
 
-# URL base del servicio (cambia según tu despliegue en Render.com)
-BASE_URL = "https://descargavideos.onrender.com"
+# URL de la API (cambia esto a tu URL de Render)
+API_URL = "https://descargavideos.onrender.com"
 
-def test_api_status():
-    """Comprueba si la API está activa y funcionando correctamente"""
+def test_health():
+    """Prueba el endpoint de health check"""
+    url = f"{API_URL}/health"
+    print(f"Probando endpoint de health check: {url}")
+    
     try:
-        response = requests.get(f"{BASE_URL}/api/status")
-        response.raise_for_status()  # Lanza una excepción para códigos de error HTTP
-        
-        print("✅ API funcionando correctamente")
-        print("Información del servidor:")
-        for key, value in response.json().items():
-            if isinstance(value, dict):
-                print(f"  {key}:")
-                for k, v in value.items():
-                    print(f"    {k}: {v}")
-            else:
-                print(f"  {key}: {value}")
-        return True
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error al conectar con la API: {e}")
-        if hasattr(e, 'response') and e.response:
-            print(f"Código de estado: {e.response.status_code}")
-            print(f"Respuesta: {e.response.text}")
+        response = requests.get(url)
+        print(f"Código de estado: {response.status_code}")
+        print(f"Respuesta: {response.text}")
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Error: {str(e)}")
         return False
 
-def test_download_youtube(url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"):
-    """Prueba la descarga de un video de YouTube"""
+def test_info_endpoint(video_url):
+    """Prueba el endpoint de información"""
+    url = f"{API_URL}/api/info"
+    print(f"Probando endpoint de info: {url}")
+    
+    data = {
+        "url": video_url
+    }
+    
     try:
-        payload = {
-            "url": url,
-            "format": "mp4",
-            "return_file": False  # No descargar el archivo, solo obtener información
-        }
-        
-        print(f"Probando descarga de YouTube: {url}")
-        response = requests.post(f"{BASE_URL}/api/download", json=payload)
-        response.raise_for_status()
-        
-        print("✅ Descarga de YouTube exitosa")
-        print("Detalles del archivo:")
-        for key, value in response.json().items():
-            print(f"  {key}: {value}")
-        return True
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error al descargar video de YouTube: {e}")
-        if hasattr(e, 'response') and e.response:
-            print(f"Código de estado: {e.response.status_code}")
-            print(f"Respuesta: {e.response.text}")
+        response = requests.post(url, json=data)
+        print(f"Código de estado: {response.status_code}")
+        print(f"Respuesta: {response.text}")
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Error: {str(e)}")
         return False
 
-def test_info_youtube(url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"):
-    """Prueba la obtención de información de un video de YouTube"""
+def test_download_endpoint(video_url, format_type="mp4"):
+    """Prueba el endpoint de descarga"""
+    url = f"{API_URL}/api/download"
+    print(f"Probando endpoint de descarga: {url}")
+    
+    data = {
+        "url": video_url,
+        "format": format_type,
+        "return_file": False  # Para que devuelva información en lugar del archivo
+    }
+    
     try:
-        payload = {
-            "url": url
-        }
-        
-        print(f"Probando información de YouTube: {url}")
-        response = requests.post(f"{BASE_URL}/api/info", json=payload)
-        response.raise_for_status()
-        
-        print("✅ Obtención de información de YouTube exitosa")
-        print("Información del video:")
-        info = response.json().get("info", {})
-        for key, value in info.items():
-            if isinstance(value, str) and len(value) > 100:
-                print(f"  {key}: {value[:100]}...")  # Truncar texto largo
-            else:
-                print(f"  {key}: {value}")
-        return True
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error al obtener información de YouTube: {e}")
-        if hasattr(e, 'response') and e.response:
-            print(f"Código de estado: {e.response.status_code}")
-            print(f"Respuesta: {e.response.text}")
-        return False
-
-def test_cleanup():
-    """Prueba la limpieza de archivos temporales"""
-    try:
-        print("Probando limpieza de archivos temporales")
-        response = requests.post(f"{BASE_URL}/api/cleanup")
-        response.raise_for_status()
-        
-        print("✅ Limpieza de archivos temporales exitosa")
-        print(f"Respuesta: {response.json()}")
-        return True
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error al limpiar archivos temporales: {e}")
-        if hasattr(e, 'response') and e.response:
-            print(f"Código de estado: {e.response.status_code}")
-            print(f"Respuesta: {e.response.text}")
+        response = requests.post(url, json=data)
+        print(f"Código de estado: {response.status_code}")
+        print(f"Respuesta: {response.text}")
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Error: {str(e)}")
         return False
 
 if __name__ == "__main__":
-    print("===== PRUEBA DE API DE DESCARGA DE VIDEOS =====\n")
+    print("=== Test de la API de Descarga de Videos ===")
     
-    # Verificar parámetros
-    if len(sys.argv) > 1:
-        BASE_URL = sys.argv[1]
-        print(f"Usando URL base: {BASE_URL}")
+    # Probar el endpoint de health
+    print("\n1. Probando endpoint de health...")
+    health_ok = test_health()
     
-    # Ejecutar pruebas
-    status_ok = test_api_status()
+    if not health_ok:
+        print("❌ El endpoint de health no está funcionando")
+    else:
+        print("✅ Endpoint de health funcionando correctamente")
     
-    if status_ok:
-        print("\n===== PRUEBAS DE FUNCIONALIDAD =====\n")
-        
-        # YouTube
-        if len(sys.argv) > 2 and sys.argv[2] == "youtube":
-            url = sys.argv[3] if len(sys.argv) > 3 else "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            test_info_youtube(url)
-            test_download_youtube(url)
-        # Instagram
-        elif len(sys.argv) > 2 and sys.argv[2] == "instagram":
-            url = sys.argv[3] if len(sys.argv) > 3 else None
-            if url:
-                # Implementar prueba de Instagram cuando se necesite
-                print("Prueba de Instagram no implementada")
-        # TikTok
-        elif len(sys.argv) > 2 and sys.argv[2] == "tiktok":
-            url = sys.argv[3] if len(sys.argv) > 3 else None
-            if url:
-                # Implementar prueba de TikTok cuando se necesite
-                print("Prueba de TikTok no implementada")
-        # Todos
-        else:
-            test_info_youtube()
-            test_download_youtube()
-            test_cleanup()
+    # Probar un video de YouTube
+    youtube_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    print(f"\n2. Probando endpoint de info con YouTube: {youtube_url}")
+    info_ok = test_info_endpoint(youtube_url)
+    
+    if not info_ok:
+        print("❌ El endpoint de info para YouTube no está funcionando")
+    else:
+        print("✅ Endpoint de info para YouTube funcionando correctamente")
+    
+    print(f"\n3. Probando endpoint de descarga con YouTube: {youtube_url}")
+    download_ok = test_download_endpoint(youtube_url)
+    
+    if not download_ok:
+        print("❌ El endpoint de descarga para YouTube no está funcionando")
+    else:
+        print("✅ Endpoint de descarga para YouTube funcionando correctamente")
