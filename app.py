@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template_string
 import os
 import tempfile
 import sys
 import importlib.util
 import shutil
+import platform
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -11,6 +12,94 @@ app = Flask(__name__)
 # Configuración temporal para guardar los videos descargados
 TEMP_FOLDER = tempfile.mkdtemp()
 app.config['TEMP_FOLDER'] = TEMP_FOLDER
+
+# HTML para la página principal
+INDEX_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Servicio de Descarga de Videos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        code {
+            background-color: #f7f7f7;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f7f7f7;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .endpoint {
+            background-color: #f7f7f7;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .method {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Servicio de Descarga de Videos</h1>
+    <p>Esta API permite descargar videos de varias plataformas como YouTube, Instagram y TikTok.</p>
+    
+    <h2>Endpoints disponibles:</h2>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/download</p>
+        <p>Descarga un video desde la URL proporcionada.</p>
+        <p><strong>Ejemplo de solicitud:</strong></p>
+        <pre>
+{
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "format": "mp4",
+    "return_file": true
+}
+        </pre>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/info</p>
+        <p>Obtiene información sobre un video sin descargarlo.</p>
+        <p><strong>Ejemplo de solicitud:</strong></p>
+        <pre>
+{
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+}
+        </pre>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/cleanup</p>
+        <p>Limpia los archivos temporales almacenados en el servidor.</p>
+    </div>
+    
+    <h2>Estado del servidor:</h2>
+    <p>El servidor está <strong>en línea</strong>.</p>
+    <p>Versión de Python: {{ python_version }}</p>
+    <p>Sistema operativo: {{ os_info }}</p>
+    <p>Directorio temporal: {{ temp_dir }}</p>
+</body>
+</html>
+"""
 
 # Importar las funciones del script descargavideos.py
 def import_descargavideos():
@@ -20,6 +109,47 @@ def import_descargavideos():
     sys.modules["descargavideos"] = module
     spec.loader.exec_module(module)
     return module
+
+# Página principal - añadido para solucionar el error 404
+@app.route('/')
+def index():
+    context = {
+        'python_version': sys.version,
+        'os_info': platform.system() + " " + platform.release(),
+        'temp_dir': app.config['TEMP_FOLDER']
+    }
+    return render_template_string(INDEX_HTML, **context)
+
+# Endpoint para verificar el estado de la API
+@app.route('/api/status')
+def status():
+    try:
+        # Verificar si podemos importar el módulo descargavideos
+        descargavideos = import_descargavideos()
+        module_status = "OK"
+    except Exception as e:
+        module_status = f"Error: {str(e)}"
+    
+    # Comprobar si el directorio temporal existe y tiene permisos de escritura
+    temp_status = "OK"
+    try:
+        test_file = os.path.join(app.config['TEMP_FOLDER'], "test.txt")
+        with open(test_file, 'w') as f:
+            f.write("test")
+        os.remove(test_file)
+    except Exception as e:
+        temp_status = f"Error: {str(e)}"
+    
+    return jsonify({
+        "status": "running",
+        "python_version": sys.version,
+        "os_info": platform.system() + " " + platform.release(),
+        "descargavideos_module": module_status,
+        "temp_directory": {
+            "path": app.config['TEMP_FOLDER'],
+            "status": temp_status
+        }
+    })
 
 # Endpoint principal para descargar videos
 @app.route('/api/download', methods=['POST'])
