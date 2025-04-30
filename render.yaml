@@ -4,7 +4,7 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
-    repo: https://github.com/tu-usuario/tu-repo-modificado.git  # Deberás cambiar esto por tu repositorio
+    repo: https://github.com/bot1004/descargavideos  # Deberás cambiar esto por tu repositorio
     branch: main
     healthCheckPath: /
     envVars:
