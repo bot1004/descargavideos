@@ -1,0 +1,8 @@
+flask==2.3.3
+gunicorn==21.2.0
+werkzeug==2.3.7
+requests==2.31.0
+pytube==15.0.0
+instaloader==4.10.0
+tiktok-downloader==0.2.8
+python-dotenv==1.0.0

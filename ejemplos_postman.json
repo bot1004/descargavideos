@@ -1,0 +1,114 @@
+{
+    "info": {
+      "name": "Video Downloader API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Descargar Video",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"url\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\",\n    \"format\": \"mp4\",\n    \"return_file\": true\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/download",
+            "host": ["{{baseUrl}}"],
+            "path": ["api", "download"]
+          },
+          "description": "Descarga un video de la URL proporcionada"
+        }
+      },
+      {
+        "name": "Obtener Info del Video",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"url\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/info",
+            "host": ["{{baseUrl}}"],
+            "path": ["api", "info"]
+          },
+          "description": "Obtiene información del video sin descargarlo"
+        }
+      },
+      {
+        "name": "Limpiar Archivos Temporales",
+        "request": {
+          "method": "POST",
+          "url": {
+            "raw": "{{baseUrl}}/api/cleanup",
+            "host": ["{{baseUrl}}"],
+            "path": ["api", "cleanup"]
+          },
+          "description": "Elimina archivos temporales almacenados en el servidor"
+        }
+      },
+      {
+        "name": "Descargar Video de Instagram",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"url\": \"https://www.instagram.com/p/EJEMPLO_POST/\",\n    \"return_file\": true\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/download",
+            "host": ["{{baseUrl}}"],
+            "path": ["api", "download"]
+          },
+          "description": "Descarga un video de Instagram"
+        }
+      },
+      {
+        "name": "Descargar Video de TikTok",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"url\": \"https://www.tiktok.com/@usuario/video/ID_VIDEO\",\n    \"return_file\": true\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/download",
+            "host": ["{{baseUrl}}"],
+            "path": ["api", "download"]
+          },
+          "description": "Descarga un video de TikTok"
+        }
+      }
+    ],
+    "variable": [
+      {
+        "key": "baseUrl",
+        "value": "https://tu-servicio.onrender.com"
+      }
+    ]
+  }

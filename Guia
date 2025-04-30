@@ -1,0 +1,104 @@
+# Guía de implementación del servicio de descarga de videos
+
+Esta guía te ayudará a implementar un servicio web que utiliza el repositorio `descargavideos` para crear una API que permite descargar videos de plataformas como YouTube, Instagram y TikTok.
+
+## Paso 1: Preparar el repositorio
+
+1. **Clona el repositorio original**
+   ```bash
+   git clone https://github.com/bot1004/descargavideos.git
+   cd descargavideos
+   ```
+
+2. **Crea tu propio repositorio**
+   - Crea un nuevo repositorio en GitHub
+   - Conecta tu clon local con tu nuevo repositorio:
+   ```bash
+   git remote remove origin
+   git remote add origin https://github.com/tu-usuario/tu-nuevo-repo.git
+   ```
+
+3. **Añade los archivos de la API**
+   - Copia los archivos `app.py`, `requirements.txt` y `Dockerfile` que te he proporcionado en la raíz del repositorio.
+   - También puedes añadir el archivo `render.yaml` para facilitar el despliegue en Render.com.
+
+4. **Sube los cambios a tu repositorio**
+   ```bash
+   git add .
+   git commit -m "Convertir a API para descargar videos"
+   git push -u origin main
+   ```
+
+## Paso 2: Desplegar en Render.com
+
+### Opción 1: Despliegue manual
+
+1. **Crea una cuenta en Render.com** (si aún no tienes una)
+
+2. **Crea un nuevo servicio web**
+   - Ve a Dashboard → New → Web Service
+   - Conecta tu repositorio de GitHub
+   - Selecciona el repositorio que creaste
+
+3. **Configura el servicio**
+   - **Name**: Elige un nombre para tu servicio (ej. video-downloader-api)
+   - **Environment**: Python
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn app:app`
+   - **Advanced** → **Environment Variables**:
+     - Añade `PORT` con valor `10000` (o el que prefieras)
+     - Añade `PYTHON_VERSION` con valor `3.10.0`
+
+4. **Crea el servicio** y espera a que se complete el despliegue
+
+### Opción 2: Despliegue con render.yaml
+
+1. **Asegúrate de actualizar el archivo render.yaml** con la URL de tu repositorio
+
+2. **En Render.com**:
+   - Ve a Dashboard → Blueprint
+   - Conecta tu repositorio
+   - Render detectará el archivo render.yaml y configurará automáticamente el servicio
+
+## Paso 3: Probar la API con Postman
+
+1. **Importa la colección de Postman**
+   - Usa el archivo JSON de ejemplos que te he proporcionado
+   - Actualiza la variable `baseUrl` con la URL de tu servicio en Render
+
+2. **Realiza pruebas de los endpoints**
+   - `/api/download`: Para descargar videos
+   - `/api/info`: Para obtener información sin descargar
+   - `/api/cleanup`: Para limpiar archivos temporales
+
+### Ejemplo de uso con `/api/download`:
+
+```json
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "format": "mp4",
+  "return_file": true
+}
+```
+
+## Posibles modificaciones y mejoras
+
+1. **Autenticación**: Añadir autenticación por API key para proteger el servicio
+   
+2. **Limitación de uso**: Implementar rate limiting para evitar abusos
+   
+3. **Almacenamiento en caché**: Guardar videos populares para evitar descargas repetidas
+   
+4. **Soporte para más plataformas**: Expandir el servicio para soportar más sitios
+   
+5. **Interfaz web**: Crear un frontend simple para usuarios que no usen Postman
+
+## Notas importantes
+
+- **Espacio de almacenamiento**: Render.com tiene límites de almacenamiento. Implementa correctamente la limpieza de archivos temporales.
+  
+- **Términos de servicio**: Asegúrate de cumplir con los términos de servicio de las plataformas de las que descargas contenido.
+  
+- **Escalado**: Si tu servicio se vuelve popular, considera opciones de escalado en Render.com.
+
+- **Monitoreo**: Implementa logging para detectar y solucionar problemas rápidamente.
